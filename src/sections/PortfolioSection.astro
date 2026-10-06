@@ -11,6 +11,22 @@ import { assetPath, assetSrcset } from "../lib/assets.js";
 const imageSizes =
   "(min-width: 48rem) 30vw, (max-width: 419px) 235px, 60vw";
 
+/*
+ * tall = 2 linhas, wide = 1 linha.
+ *
+ * As colunas precisam somar a mesma altura
+ * para o bloco terminar numa linha reta:
+ * 4 tall + 4 wide = 12 linhas →
+ * 2 colunas × 6 (mobile) ou 4 × 3 (desktop).
+ *
+ * Mobile (auto-flow dense):
+ *   [1][2]
+ *   [1][2]
+ *   [3][4]
+ *   [5][4]
+ *   [6][7]
+ *   [6][8]
+ */
 const layout = [
   "tall",
   "tall",
@@ -18,7 +34,7 @@ const layout = [
   "tall",
   "wide",
   "tall",
-  "tall",
+  "wide",
   "wide",
 ];
 ---
@@ -146,6 +162,14 @@ const layout = [
       grid-auto-rows: clamp(13rem, 22vw, 25rem);
     }
 
+    /*
+     * Cada coluna = 1 tall + 1 wide (3 linhas),
+     * em xadrez — todas terminam na linha 3:
+     *
+     *   [1][7][3][4]
+     *   [1][2][5][4]
+     *   [6][2][5][8]
+     */
     .portfolio-grid__item:nth-child(1) {
       grid-column: 1;
       grid-row: 1 / span 2;
@@ -153,7 +177,7 @@ const layout = [
 
     .portfolio-grid__item:nth-child(2) {
       grid-column: 2;
-      grid-row: 1 / span 2;
+      grid-row: 2 / span 2;
     }
 
     .portfolio-grid__item:nth-child(3) {
@@ -178,7 +202,7 @@ const layout = [
 
     .portfolio-grid__item:nth-child(7) {
       grid-column: 2;
-      grid-row: 3 / span 2;
+      grid-row: 1;
     }
 
     .portfolio-grid__item:nth-child(8) {

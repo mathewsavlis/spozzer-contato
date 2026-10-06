@@ -11,7 +11,7 @@ const STORAGE_KEY =
  * sessionStorage) que identifica o mesmo
  * navegador entre visitas.
  *
- * Enviado tanto em /leads (submitLead.js)
+ * Enviado tanto em /leads (whatsappLead.js)
  * quanto em /events (session.js) — é a
  * chave que o CRM usa para ligar uma sessão
  * de navegação ao lead que ela eventualmente

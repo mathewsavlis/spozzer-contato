@@ -39,7 +39,7 @@ export function initPageAnimations() {
   let secondaryTaskId = null;
   let secondaryTaskType = null;
 
-  let markFormSubmitted = () => {};
+  let markWhatsappClick = () => {};
 
   /*
    * =========================================
@@ -85,8 +85,8 @@ export function initPageAnimations() {
     const tracking =
       initSessionTracking();
 
-    markFormSubmitted =
-      tracking.markFormSubmitted;
+    markWhatsappClick =
+      tracking.markWhatsappClick;
   } catch (error) {
     console.error(
       "Falha ao iniciar analytics de sessão:",
@@ -126,8 +126,8 @@ export function initPageAnimations() {
             .initTestimonials(),
           contactModule
             .initContactExperience({
-              onFormSubmitted:
-                markFormSubmitted,
+              onWhatsappClick:
+                markWhatsappClick,
             }),
           aboutModule
             .initAboutExperience()

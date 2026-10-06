@@ -1,5 +1,13 @@
 ---
 import { contactData } from "../data/contactData.js";
+import {
+  WHATSAPP_MESSAGE,
+  buildWhatsappUrl,
+} from "../lib/leads/whatsappLead.js";
+
+const whatsappNumber = import.meta.env.PUBLIC_WHATSAPP_NUMBER ?? "";
+
+const whatsappUrl = buildWhatsappUrl(whatsappNumber, WHATSAPP_MESSAGE);
 ---
 
 <section
@@ -14,8 +22,25 @@ import { contactData } from "../data/contactData.js";
         {contactData.eyebrow}
       </p>
 
-      <h2 id="contact-title" class="contact__title type-display">
-        {contactData.title}
+      <!--
+        Mesma composição do título do Hero:
+        primeira linha display, segunda linha
+        com a palavra em script + display.
+      -->
+      <h2 id="contact-title" class="contact__title">
+        <span class="contact__title-line type-display">
+          {contactData.title.firstLine}
+        </span>
+
+        <span class="contact__title-line contact__title-line--accent">
+          <span class="contact__title-signature type-script">
+            {contactData.title.accent}
+          </span>
+
+          <span class="type-display">
+            {contactData.title.secondLine}
+          </span>
+        </span>
       </h2>
 
       <p class="contact__description type-body">
@@ -23,156 +48,27 @@ import { contactData } from "../data/contactData.js";
       </p>
     </header>
 
-    <form
-      class="contact-form"
-      name="form_sthefani_pozzer"
-      data-contact-form
-      novalidate
-    >
+    <div class="contact-cta" data-contact-cta>
       <!--
-        Honeypot.
-
-        Continua existindo no formulário para bots,
-        mas não usamos mais left:-10000px porque
-        isso pode contribuir para overflow horizontal.
+        O link já sai pronto do build. No clique,
+        contactExperience.js só grava o lead — a
+        mensagem que a pessoa envia não muda.
       -->
+      <a
+        class="contact-cta__button"
+        href={whatsappUrl}
+        target="_blank"
+        rel="noopener"
+        data-whatsapp-cta
+        data-whatsapp-number={whatsappNumber}
+      >
+        {contactData.ctaLabel}
+      </a>
 
-      <div class="contact-form__honeypot" aria-hidden="true">
-        <label>
-          Website
-
-          <input type="text" name="website" tabindex="-1" autocomplete="off" />
-        </label>
-      </div>
-
-      <div class="contact-form__field">
-        <label class="contact-form__label" for="contact-name"> Nome </label>
-
-        <input
-          id="contact-name"
-          class="contact-form__input"
-          name="name"
-          type="text"
-          autocomplete="name"
-          maxlength="80"
-          required
-        />
-
-        <span
-          class="contact-form__error"
-          data-error-for="name"
-          aria-live="polite"></span>
-      </div>
-
-      <div class="contact-form__field">
-        <label class="contact-form__label" for="contact-email"> E-mail </label>
-
-        <input
-          id="contact-email"
-          class="contact-form__input"
-          name="email"
-          type="email"
-          autocomplete="email"
-          maxlength="160"
-          required
-        />
-
-        <span
-          class="contact-form__error"
-          data-error-for="email"
-          aria-live="polite"></span>
-      </div>
-
-      <div class="contact-form__field">
-        <label class="contact-form__label" for="contact-phone">
-          WhatsApp
-        </label>
-
-        <input
-          id="contact-phone"
-          class="contact-form__input"
-          name="phone"
-          type="tel"
-          autocomplete="tel"
-          inputmode="tel"
-          maxlength="24"
-          required
-        />
-
-        <span
-          class="contact-form__error"
-          data-error-for="phone"
-          aria-live="polite"></span>
-      </div>
-
-      <div class="contact-form__field">
-        <label class="contact-form__label" for="contact-location">
-          Onde deseja a sua experiência?
-        </label>
-
-        <!--
-          Os values são gravados no banco (leads.location)
-          e validados pelo Worker. Não renomear sem
-          atualizar LEAD_LOCATIONS no byspozzer-api.
-        -->
-        <select
-          id="contact-location"
-          class="contact-form__input
-            contact-form__select"
-          name="location"
-          required
-        >
-          <option value="" selected disabled>Selecione</option>
-          <option value="sao_paulo">São Paulo</option>
-          <option value="florianopolis">Florianópolis</option>
-          <option value="amsterdam">Amsterdam</option>
-        </select>
-
-        <span
-          class="contact-form__error"
-          data-error-for="location"
-          aria-live="polite"></span>
-      </div>
-
-      <div class="contact-form__field
-          contact-form__field--message">
-        <label class="contact-form__label" for="contact-message">
-          Conte sobre o projeto
-        </label>
-
-        <textarea
-          id="contact-message"
-          class="contact-form__input
-            contact-form__textarea"
-          name="message"
-          rows="3"
-          maxlength="2000"
-          required></textarea>
-
-        <span
-          class="contact-form__error"
-          data-error-for="message"
-          aria-live="polite"></span>
-      </div>
-
-      <div class="contact-form__footer">
-        <p
-          class="contact-form__status"
-          data-form-status
-          role="status"
-          aria-live="polite"
-        >
-        </p>
-
-        <button class="contact-form__submit" type="submit" data-contact-submit>
-          <span data-submit-label>
-            {contactData.submitLabel}
-          </span>
-
-          <span class="contact-form__arrow" aria-hidden="true"> → </span>
-        </button>
-      </div>
-    </form>
+      <p class="contact-cta__note">
+        {contactData.ctaNote}
+      </p>
+    </div>
   </div>
 </section>
 
@@ -208,17 +104,27 @@ import { contactData } from "../data/contactData.js";
     color: var(--color-dark);
   }
 
+  /*
+   * Composição centralizada, como o Hero e a
+   * introdução do Portfolio: sem formulário,
+   * a seção vira um único bloco de leitura
+   * que termina no botão.
+   */
   .contact__container {
     display: grid;
 
     width: 100%;
-    max-width: var(--content-max);
+    max-width: 48rem;
 
     min-width: 0;
 
+    justify-items: center;
+
     margin-inline: auto;
 
-    gap: clamp(1.4rem, 4svh, 2.25rem);
+    gap: clamp(2.5rem, 6svh, 3.25rem);
+
+    text-align: center;
   }
 
   /* =========================================
@@ -226,13 +132,16 @@ import { contactData } from "../data/contactData.js";
      ========================================= */
 
   .contact__header {
+    display: grid;
+
+    width: 100%;
     min-width: 0;
 
-    max-width: 35rem;
+    justify-items: center;
   }
 
   .contact__eyebrow {
-    margin-bottom: 1.1rem;
+    margin-bottom: 1.6rem;
 
     color: var(--color-gold);
 
@@ -240,17 +149,64 @@ import { contactData } from "../data/contactData.js";
   }
 
   .contact__title {
-    max-width: 11ch;
+    display: grid;
 
-    font-size: clamp(3rem, 11vw, 4.25rem);
+    max-width: 100%;
+
+    place-items: center;
+
+    gap: 0.4rem;
+
+    color: var(--color-dark);
+  }
+
+  .contact__title-line {
+    display: block;
+
+    max-width: 100%;
+
+    font-size: clamp(2.3rem, 10.4vw, 3.3rem);
 
     line-height: 0.9;
 
-    text-wrap: balance;
+    word-spacing: -0.06em;
+
+    white-space: nowrap;
+  }
+
+  .contact__title-line--accent {
+    display: flex;
+
+    align-items: baseline;
+
+    justify-content: center;
+
+    gap: 0.22em;
+  }
+
+  /*
+   * Mesmo ajuste do Hero: o padding mantém a
+   * cauda da letra script dentro da caixa —
+   * o reveal anima clip-path no título.
+   */
+  .contact__title-signature {
+    position: relative;
+    top: 0.04em;
+
+    display: inline-block;
+
+    padding-bottom: 0.28em;
+    margin-bottom: -0.28em;
+
+    color: var(--color-gold);
+
+    font-size: 1.22em;
+
+    line-height: 1;
   }
 
   .contact__description {
-    width: calc(100% - var(--copy-gutter));
+    width: calc(100% - (var(--copy-gutter) * 2));
 
     max-width: 25rem;
 
@@ -258,79 +214,45 @@ import { contactData } from "../data/contactData.js";
 
     color: rgba(42, 42, 42, 0.66);
 
-    font-size: clamp(0.72rem, 2.7vw, 0.82rem);
+    font-size: clamp(0.74rem, 2.7vw, 0.86rem);
 
-    line-height: 1.85;
+    line-height: 1.9;
+
+    letter-spacing: 0.012em;
 
     text-wrap: pretty;
   }
 
   /* =========================================
-     FORM
+     CTA
+     =========================================
+     Mesmo botão do Hero ("AGENDAR SESSÃO"),
+     invertido para o fundo claro.
      ========================================= */
 
-  .contact-form {
-    position: relative;
-
+  .contact-cta {
     display: grid;
 
     width: 100%;
     min-width: 0;
 
-    gap: clamp(0.75rem, 2.2svh, 1.1rem);
+    justify-items: center;
+
+    gap: 1.1rem;
   }
 
-  .contact-form__field {
-    position: relative;
+  .contact-cta__button {
+    display: inline-flex;
 
-    display: grid;
-
-    width: 100%;
-    min-width: 0;
-
-    gap: 0.32rem;
-  }
-
-  .contact-form__label {
-    color: rgba(42, 42, 42, 0.58);
-
-    font-family: var(--font-sans);
-
-    font-size: 0.54rem;
-
-    font-weight: 500;
-
-    letter-spacing: 0.18em;
-
-    text-transform: uppercase;
-  }
-
-  /*
-   * IMPORTANTE — iOS
-   *
-   * Campos menores que aproximadamente
-   * 16px podem provocar autozoom do Safari
-   * quando recebem foco.
-   *
-   * 1rem = 16px com o root padrão.
-   */
-
-  .contact-form__input {
-    display: block;
-
-    width: 100%;
     max-width: 100%;
-    min-width: 0;
+    min-height: 3.25rem;
 
-    padding: 0 0 0.52rem;
+    align-items: center;
+    justify-content: center;
 
-    border: 0;
+    padding: 1.05rem clamp(1.4rem, 6vw, 2.75rem);
 
-    border-bottom: 1px solid rgba(42, 42, 42, 0.24);
-
-    border-radius: 0;
-
-    outline: 0;
+    border: 1px solid rgba(42, 42, 42, 0.45);
 
     background: transparent;
 
@@ -338,184 +260,62 @@ import { contactData } from "../data/contactData.js";
 
     font-family: var(--font-sans);
 
-    /*
-     * Não reduzir abaixo de 16px
-     * no mobile.
-     */
-    font-size: 1rem;
+    font-size: 0.625rem;
 
-    font-weight: 400;
+    font-weight: 500;
 
-    line-height: 1.25;
+    line-height: 1;
 
-    transition: border-color var(--duration-normal) var(--ease-premium);
+    letter-spacing: 0.22em;
+
+    text-align: center;
+
+    text-decoration: none;
+
+    text-transform: uppercase;
+
+    white-space: nowrap;
+
+    transition:
+      background-color var(--duration-normal) var(--ease-premium),
+      border-color var(--duration-normal) var(--ease-premium),
+      color var(--duration-normal) var(--ease-premium);
   }
 
-  .contact-form__input:focus {
-    border-color: var(--color-gold);
+  .contact-cta__button:focus-visible {
+    border-color: var(--color-dark);
+
+    background: var(--color-dark);
+
+    color: var(--color-light);
+
+    outline: 2px solid var(--color-gold);
+
+    outline-offset: 4px;
   }
 
-  .contact-form__input[aria-invalid="true"] {
-    border-color: rgba(210, 90, 90, 0.85);
+  @media (hover: hover) and (pointer: fine) {
+    .contact-cta__button:hover {
+      border-color: var(--color-dark);
+
+      background: var(--color-dark);
+
+      color: var(--color-light);
+    }
   }
 
-  .contact-form__select {
-    padding-right: 1.5rem;
-
-    appearance: none;
-
-    background-image: linear-gradient(
-        45deg,
-        transparent 50%,
-        currentColor 50%
-      ),
-      linear-gradient(135deg, currentColor 50%, transparent 50%);
-
-    background-position:
-      calc(100% - 0.6rem) 0.45em,
-      calc(100% - 0.25rem) 0.45em;
-
-    background-size: 0.35rem 0.35rem;
-
-    background-repeat: no-repeat;
-
-    cursor: pointer;
-  }
-
-  /*
-   * Placeholder "Selecione" com o mesmo
-   * tom apagado dos labels.
-   */
-  .contact-form__select:has(option[value=""]:checked) {
-    color: rgba(42, 42, 42, 0.42);
-  }
-
-  .contact-form__select option {
-    color: var(--color-dark);
-  }
-
-  .contact-form__textarea {
-    min-height: 3.25rem;
-
-    max-height: 5rem;
-
-    resize: vertical;
-  }
-
-  .contact-form__error {
-    min-height: 1em;
-
-    color: rgba(225, 125, 125, 0.9);
+  .contact-cta__note {
+    color: rgba(42, 42, 42, 0.46);
 
     font-family: var(--font-sans);
 
-    font-size: 0.62rem;
-
-    line-height: 1.4;
-  }
-
-  /* =========================================
-     SUBMIT
-     ========================================= */
-
-  .contact-form__footer {
-    display: grid;
-
-    min-width: 0;
-
-    gap: 0.65rem;
-
-    margin-top: 0.15rem;
-  }
-
-  .contact-form__status {
-    min-height: 1em;
-
-    color: rgba(42, 42, 42, 0.64);
-
-    font-family: var(--font-sans);
-
-    font-size: 0.66rem;
-
-    line-height: 1.35;
-  }
-
-  .contact-form__submit {
-    display: inline-flex;
-
-    width: fit-content;
-
-    max-width: 100%;
-
-    align-items: center;
-
-    gap: 0.85rem;
-
-    padding: 0.65rem 0;
-
-    border-bottom: 1px solid var(--color-gold);
-
-    color: var(--color-dark);
-
-    font-family: var(--font-sans);
-
-    font-size: 0.61rem;
+    font-size: 0.56rem;
 
     font-weight: 500;
 
     letter-spacing: 0.2em;
 
-    cursor: pointer;
-
     text-transform: uppercase;
-  }
-
-  .contact-form__submit:disabled {
-    opacity: 0.4;
-
-    cursor: wait;
-  }
-
-  .contact-form__arrow {
-    font-size: 1rem;
-
-    transition: transform var(--duration-normal) var(--ease-premium);
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    .contact-form__submit:hover:not(:disabled) .contact-form__arrow {
-      transform: translateX(5px);
-    }
-  }
-
-  /* =========================================
-     HONEYPOT
-     =========================================
-     Não usar left:-10000px.
-     ========================================= */
-
-  .contact-form__honeypot {
-    position: absolute;
-
-    width: 1px;
-
-    height: 1px;
-
-    padding: 0;
-
-    margin: -1px;
-
-    overflow: hidden;
-
-    clip: rect(0, 0, 0, 0);
-
-    clip-path: inset(50%);
-
-    white-space: nowrap;
-
-    border: 0;
-
-    pointer-events: none;
   }
 
   /* =========================================
@@ -530,45 +330,48 @@ import { contactData } from "../data/contactData.js";
     }
 
     .contact__container {
-      grid-template-columns:
-        minmax(0, 0.85fr)
-        minmax(0, 1.15fr);
+      max-width: 60rem;
 
-      align-items: center;
-
-      gap: clamp(4rem, 8vw, 8rem);
+      gap: clamp(2.75rem, 6dvh, 3.75rem);
     }
 
-    .contact__header {
-      max-width: 38rem;
+    .contact__eyebrow {
+      margin-bottom: 2rem;
     }
 
     .contact__title {
-      font-size: clamp(4.4rem, 5vw, 5.8rem);
-      line-height: 0.88;
+      gap: clamp(0.5rem, 1vh, 0.75rem);
+    }
+
+    .contact__title-line {
+      font-size: clamp(3.8rem, 4.7vw, 5.35rem);
+    }
+
+    .contact__title-signature {
+      top: 0.025em;
+
+      padding-bottom: 0.3em;
+      margin-bottom: -0.3em;
     }
 
     .contact__description {
-      max-width: 29rem;
+      max-width: 33rem;
 
-      margin-top: 2.25rem;
+      margin-top: 2.35rem;
 
-      font-size: clamp(0.8rem, 0.9vw, 0.92rem);
+      font-size: clamp(0.8rem, 0.9vw, 0.9rem);
+
+      line-height: 1.95;
     }
 
-    .contact-form {
-      gap: clamp(1rem, 2dvh, 1.4rem);
+    .contact-cta__button {
+      padding-inline: 2.75rem;
     }
+  }
 
-    /*
-     * Preserva o tamanho desktop anterior.
-     */
-    .contact-form__input {
-      font-size: clamp(0.92rem, 3.3vw, 1.08rem);
-    }
-
-    .contact-form__textarea {
-      min-height: 3.5rem;
+  @media (prefers-reduced-motion: reduce) {
+    .contact-cta__button {
+      transition: none;
     }
   }
 </style>

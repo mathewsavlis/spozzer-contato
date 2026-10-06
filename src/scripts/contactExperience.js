@@ -1,18 +1,11 @@
 import { gsap } from "../lib/gsap.js";
 
 import {
-  validateLead,
-} from "../lib/leads/validateLead.js";
+  registerWhatsappLead,
+} from "../lib/leads/whatsappLead.js";
 
-import {
-  submitLead,
-} from "../lib/leads/submitLead.js";
-
-import { getAttribution }
-  from "../lib/leads/attribution.js";
-
-import { getVisitorId }
-  from "../lib/analytics/visitorId.js";
+import { trackWhatsappLead }
+  from "../lib/analytics/metaLead.js";
 
 
 const MOBILE_QUERY =
@@ -26,7 +19,7 @@ const REDUCED_MOTION_QUERY =
 
 
 export function initContactExperience({
-  onFormSubmitted,
+  onWhatsappClick,
 } = {}) {
   const section =
     document.querySelector(
@@ -41,32 +34,16 @@ export function initContactExperience({
   }
 
 
-  const form =
+  const whatsappLink =
     section.querySelector(
-      "[data-contact-form]"
-    );
-
-  const submitButton =
-    section.querySelector(
-      "[data-contact-submit]"
-    );
-
-  const submitLabel =
-    section.querySelector(
-      "[data-submit-label]"
-    );
-
-  const status =
-    section.querySelector(
-      "[data-form-status]"
+      "[data-whatsapp-cta]"
     );
 
 
   if (
-    !(form instanceof HTMLFormElement) ||
     !(
-      submitButton instanceof
-      HTMLButtonElement
+      whatsappLink instanceof
+      HTMLAnchorElement
     )
   ) {
     return () => { };
@@ -88,11 +65,8 @@ export function initContactExperience({
    * toolbar aparece/desaparece
    * → composição não recalcula
    *
-   * formulário precisa crescer
+   * conteúdo precisa crescer
    * → section continua podendo crescer
-   *
-   * teclado abre
-   * → não redefine a geometria da section
    */
 
   const mobileViewportQuery =
@@ -251,313 +225,48 @@ export function initContactExperience({
 
   /*
    * =========================================
-   * FORM STATE
+   * WHATSAPP CLICK
    * =========================================
+   *
+   * Não chamamos preventDefault: o link segue
+   * normalmente para o WhatsApp. Antes disso,
+   * ainda dentro do clique:
+   *
+   * - o lead é gravado no banco (sendBeacon);
+   * - o Pixel do Meta recebe o Lead (antes
+   *   disparado pela página /obrigado);
+   * - a sessão é marcada e o clique vira uma
+   *   linha própria em visitor_sessions.
+   *
+   * Sem número configurado no build, o href
+   * estático já está quebrado de qualquer
+   * forma — não gravamos um lead que não
+   * leva a lugar nenhum.
    */
 
-  const setState =
-    (
-      state,
-      message = ""
-    ) => {
-      form.dataset.state =
-        state;
+  const whatsappNumber =
+    whatsappLink.dataset
+      .whatsappNumber ?? "";
 
 
-      const loading =
-        state === "loading";
-
-
-      submitButton.disabled =
-        loading;
-
-
-      submitButton.setAttribute(
-        "aria-busy",
-        loading
-          ? "true"
-          : "false"
-      );
-
-
-      if (submitLabel) {
-        submitLabel.textContent =
-          loading
-            ? "ENVIANDO..."
-            : "INICIAR PROJETO";
-      }
-
-
-      if (status) {
-        status.textContent =
-          message;
-      }
-    };
-
-
-  /*
-   * =========================================
-   * ERRORS
-   * =========================================
-   */
-
-  const clearErrors =
+  const handleWhatsappClick =
     () => {
-      form
-        .querySelectorAll(
-          '[aria-invalid="true"]'
-        )
-        .forEach(
-          (field) => {
-            field.removeAttribute(
-              "aria-invalid"
-            );
-          }
-        );
+      if (!whatsappNumber) return;
 
 
-      section
-        .querySelectorAll(
-          "[data-error-for]"
-        )
-        .forEach(
-          (element) => {
-            element.textContent =
-              "";
-          }
-        );
+      registerWhatsappLead();
+
+
+      trackWhatsappLead();
+
+
+      onWhatsappClick?.();
     };
 
 
-  const showErrors =
-    (errors) => {
-      Object.entries(
-        errors
-      ).forEach(
-        ([
-          fieldName,
-          message,
-        ]) => {
-          const field =
-            form.elements.namedItem(
-              fieldName
-            );
-
-
-          const error =
-            section.querySelector(
-              `[data-error-for="${fieldName}"]`
-            );
-
-
-          if (
-            field instanceof
-            HTMLElement
-          ) {
-            field.setAttribute(
-              "aria-invalid",
-              "true"
-            );
-          }
-
-
-          if (error) {
-            error.textContent =
-              message;
-          }
-        }
-      );
-
-
-      const firstField =
-        Object.keys(
-          errors
-        )[0];
-
-
-      form.elements
-        .namedItem(
-          firstField
-        )
-        ?.focus?.();
-    };
-
-
-  /*
-   * =========================================
-   * SUBMIT
-   * =========================================
-   */
-
-  const handleSubmit =
-    async (
-      event
-    ) => {
-      event.preventDefault();
-
-
-      if (
-        form.dataset.state ===
-        "loading"
-      ) {
-        return;
-      }
-
-
-      clearErrors();
-
-
-      const formData =
-        new FormData(
-          form
-        );
-
-
-      const rawLead = {
-        name:
-          String(
-            formData.get(
-              "name"
-            ) ?? ""
-          ),
-
-        email:
-          String(
-            formData.get(
-              "email"
-            ) ?? ""
-          ),
-
-        phone:
-          String(
-            formData.get(
-              "phone"
-            ) ?? ""
-          ),
-
-        message:
-          String(
-            formData.get(
-              "message"
-            ) ?? ""
-          ),
-
-        location:
-          String(
-            formData.get(
-              "location"
-            ) ?? ""
-          ),
-
-        website:
-          String(
-            formData.get(
-              "website"
-            ) ?? ""
-          ),
-      };
-
-
-      const validation =
-        validateLead(
-          rawLead
-        );
-
-
-      if (
-        !validation.valid
-      ) {
-        showErrors(
-          validation.errors
-        );
-
-
-        setState(
-          "error",
-          "Revise os campos destacados."
-        );
-
-
-        return;
-      }
-
-
-      setState(
-        "loading",
-        "Registrando seu projeto..."
-      );
-
-
-      try {
-        const attribution =
-          getAttribution();
-
-        const result =
-          await submitLead({
-            ...validation.normalized,
-
-            form_name:
-              form.name ||
-              "form_sthefani_pozzer",
-
-            ...attribution,
-
-            visitorId:
-              getVisitorId(),
-          });
-
-
-        setState(
-          "success",
-          "Cadastro concluído."
-        );
-
-
-        onFormSubmitted?.();
-
-        window.location.assign(
-          result.redirectUrl ||
-          "/obrigado"
-        );
-      } catch (error) {
-        console.error(
-          "Falha ao enviar lead:",
-          {
-            status:
-              error?.status ?? null,
-
-            message:
-              error?.message ??
-              "Erro desconhecido",
-
-            fields:
-              error?.fields ?? null,
-          }
-        );
-
-
-        if (
-          error.fields &&
-          typeof error.fields ===
-          "object"
-        ) {
-          showErrors(
-            error.fields
-          );
-        }
-
-
-        setState(
-          "error",
-          "Não foi possível enviar agora. Seus dados continuam preenchidos. Tente novamente."
-        );
-      }
-    };
-
-
-  form.addEventListener(
-    "submit",
-    handleSubmit
+  whatsappLink.addEventListener(
+    "click",
+    handleWhatsappClick
   );
 
 
@@ -593,15 +302,9 @@ export function initContactExperience({
         ".contact__description"
       );
 
-    const fields = [
-      ...section.querySelectorAll(
-        ".contact-form__field"
-      ),
-    ];
-
-    const footer =
+    const cta =
       section.querySelector(
-        ".contact-form__footer"
+        ".contact-cta"
       );
 
 
@@ -705,31 +408,12 @@ export function initContactExperience({
 
 
                 /*
-                 * FIELDS
+                 * CTA
                  */
 
-                gsap.set(
-                  fields,
-                  {
-                    autoAlpha:
-                      0,
-
-                    y:
-                      14,
-
-                    willChange:
-                      "transform, opacity",
-                  }
-                );
-
-
-                /*
-                 * FOOTER
-                 */
-
-                if (footer) {
+                if (cta) {
                   gsap.set(
-                    footer,
+                    cta,
                     {
                       autoAlpha:
                         0,
@@ -845,39 +529,12 @@ export function initContactExperience({
 
 
                 /*
-                 * FORM FIELDS
+                 * CTA
                  */
 
-                timeline.to(
-                  fields,
-                  {
-                    autoAlpha:
-                      1,
-
-                    y:
-                      0,
-
-                    duration:
-                      0.38,
-
-                    stagger:
-                      0.07,
-
-                    ease:
-                      "power2.out",
-                  },
-
-                  0.3
-                );
-
-
-                /*
-                 * FOOTER
-                 */
-
-                if (footer) {
+                if (cta) {
                   timeline.to(
-                    footer,
+                    cta,
                     {
                       autoAlpha:
                         1,
@@ -892,7 +549,7 @@ export function initContactExperience({
                         "power2.out",
                     },
 
-                    0.68
+                    0.4
                   );
                 }
 
@@ -906,8 +563,7 @@ export function initContactExperience({
                     eyebrow,
                     title,
                     description,
-                    ...fields,
-                    footer,
+                    cta,
                   ].filter(Boolean),
                   {
                     willChange:
@@ -974,21 +630,9 @@ export function initContactExperience({
               }
 
 
-              gsap.set(
-                fields,
-                {
-                  autoAlpha:
-                    0,
-
-                  y:
-                    12,
-                }
-              );
-
-
-              if (footer) {
+              if (cta) {
                 gsap.set(
-                  footer,
+                  cta,
                   {
                     autoAlpha:
                       0,
@@ -1110,39 +754,12 @@ export function initContactExperience({
 
 
               /*
-               * FIELDS
+               * CTA
                */
 
-              timeline.to(
-                fields,
-                {
-                  autoAlpha:
-                    1,
-
-                  y:
-                    0,
-
-                  duration:
-                    0.18,
-
-                  stagger:
-                    0.055,
-
-                  ease:
-                    "power2.out",
-                },
-
-                0.34
-              );
-
-
-              /*
-               * FOOTER
-               */
-
-              if (footer) {
+              if (cta) {
                 timeline.to(
-                  footer,
+                  cta,
                   {
                     autoAlpha:
                       1,
@@ -1157,7 +774,7 @@ export function initContactExperience({
                       "power2.out",
                   },
 
-                  0.72
+                  0.4
                 );
               }
             },
@@ -1187,16 +804,16 @@ export function initContactExperience({
    *
    * Fundamental para Astro HMR:
    *
-   * - remove submit listener;
+   * - remove click listener;
    * - remove viewport listener;
    * - remove CSS variable;
    * - destrói timelines / ScrollTriggers.
    */
 
   return () => {
-    form.removeEventListener(
-      "submit",
-      handleSubmit
+    whatsappLink.removeEventListener(
+      "click",
+      handleWhatsappClick
     );
 
 

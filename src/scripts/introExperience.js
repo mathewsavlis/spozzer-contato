@@ -3,6 +3,9 @@ import {
   ScrollTrigger,
 } from "../lib/gsap.js";
 
+import { afterPageLoad }
+  from "../lib/afterPageLoad.js";
+
 
 const MOBILE_QUERY =
   "(max-width: 47.999rem)";
@@ -10,6 +13,24 @@ const MOBILE_QUERY =
 
 const REDUCED_MOTION_QUERY =
   "(prefers-reduced-motion: reduce)";
+
+
+/*
+ * Economia de dados ou rede 2G: o vídeo
+ * (4–9 MB) não vale o custo — o pôster
+ * continua cobrindo o Hero.
+ */
+function prefersLightMedia() {
+  const connection =
+    navigator.connection;
+
+  return Boolean(
+    connection?.saveData ||
+    /(^|-)2g$/.test(
+      connection?.effectiveType ?? ""
+    )
+  );
+}
 
 
 /*
@@ -447,77 +468,97 @@ function initHeroVideoPlayback(
   }
 
 
-  /*
-   * A URL entra no elemento apenas aqui.
-   * Até este ponto o navegador conhece somente
-   * os data-attributes, que não disparam download.
-   */
-
-  video.src =
-    source;
+  video.dataset.playback =
+    "deferred";
 
 
   /*
-   * Reforçamos os requisitos
-   * de autoplay também via JS.
+   * A URL entra no elemento apenas aqui, e só
+   * depois do load: o vídeo é o maior arquivo
+   * da página e não deve disputar banda com
+   * fontes, JS e o pôster (LCP). Até lá o
+   * pôster cobre o Hero.
    */
 
-  video.autoplay =
-    true;
-
-
-  video.loop =
-    true;
-
-
-  video.muted =
-    true;
-
-
-  video.defaultMuted =
-    true;
-
-
-  video.controls =
+  let started =
     false;
 
 
-  video.disablePictureInPicture =
-    true;
+  const startVideo =
+    () => {
+      video.src =
+        source;
 
 
-  video.removeAttribute(
-    "controls"
-  );
+      /*
+       * Reforçamos os requisitos
+       * de autoplay também via JS.
+       */
+
+      video.autoplay =
+        true;
 
 
-  video.setAttribute(
-    "disableRemotePlayback",
-    ""
-  );
+      video.loop =
+        true;
 
 
-  video.dataset.playback =
-    "pending";
+      video.muted =
+        true;
 
 
-  video.playsInline =
-    true;
+      video.defaultMuted =
+        true;
 
 
-  video.setAttribute(
-    "muted",
-    ""
-  );
+      video.controls =
+        false;
 
 
-  video.setAttribute(
-    "playsinline",
-    ""
-  );
+      video.disablePictureInPicture =
+        true;
 
 
-  video.load();
+      video.removeAttribute(
+        "controls"
+      );
+
+
+      video.setAttribute(
+        "disableRemotePlayback",
+        ""
+      );
+
+
+      video.dataset.playback =
+        "pending";
+
+
+      video.playsInline =
+        true;
+
+
+      video.setAttribute(
+        "muted",
+        ""
+      );
+
+
+      video.setAttribute(
+        "playsinline",
+        ""
+      );
+
+
+      video.load();
+
+
+      started =
+        true;
+
+
+      attemptPlay();
+    };
 
 
   /*
@@ -530,6 +571,7 @@ function initHeroVideoPlayback(
     async () => {
       if (
         destroyed ||
+        !started ||
         document.hidden ||
         !isInView
       ) {
@@ -698,7 +740,12 @@ function initHeroVideoPlayback(
   );
 
 
-  attemptPlay();
+  const cancelStart =
+    prefersLightMedia()
+      ? () => { }
+      : afterPageLoad(
+        startVideo
+      );
 
 
   /*
@@ -717,6 +764,9 @@ function initHeroVideoPlayback(
 
     destroyed =
       true;
+
+
+    cancelStart();
 
 
     observer?.disconnect();

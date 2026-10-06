@@ -1,22 +1,39 @@
 ---
-import "@fontsource/montserrat/300.css";
-import "@fontsource/montserrat/400.css";
-import "@fontsource/montserrat/500.css";
-
-import "@fontsource/cormorant-garamond/300.css";
-import "@fontsource/cormorant-garamond/400.css";
-
-import "@fontsource/italianno/400.css";
-
 import "../styles/global.css";
 
 /*
- * Mesmos arquivos (latin) já referenciados pelos
- * @font-face acima — o Vite emite um único asset.
+ * =========================================
+ * FONTES
+ * =========================================
+ *
+ * Só o subconjunto latin em woff2. Os CSS do
+ * @fontsource declaram 28 @font-face (cyrillic,
+ * vietnamese, latin-ext, fallback .woff) que
+ * iam inline no HTML sem nunca serem usados —
+ * todo o texto do site cabe em U+0000–00FF.
  */
 import cormorant300Url from "@fontsource/cormorant-garamond/files/cormorant-garamond-latin-300-normal.woff2?url";
+import cormorant400Url from "@fontsource/cormorant-garamond/files/cormorant-garamond-latin-400-normal.woff2?url";
 import italianno400Url from "@fontsource/italianno/files/italianno-latin-400-normal.woff2?url";
 import montserrat300Url from "@fontsource/montserrat/files/montserrat-latin-300-normal.woff2?url";
+import montserrat400Url from "@fontsource/montserrat/files/montserrat-latin-400-normal.woff2?url";
+import montserrat500Url from "@fontsource/montserrat/files/montserrat-latin-500-normal.woff2?url";
+
+const fontFaces = [
+  ["Cormorant Garamond", 300, cormorant300Url],
+  ["Cormorant Garamond", 400, cormorant400Url],
+  ["Italianno", 400, italianno400Url],
+  ["Montserrat", 300, montserrat300Url],
+  ["Montserrat", 400, montserrat400Url],
+  ["Montserrat", 500, montserrat500Url],
+];
+
+const fontFaceCss = fontFaces
+  .map(
+    ([family, weight, url]) =>
+      `@font-face{font-family:"${family}";font-style:normal;font-display:swap;font-weight:${weight};src:url(${url}) format("woff2")}`
+  )
+  .join("");
 
 interface Props {
   title?: string;
@@ -52,6 +69,8 @@ const introFonts = preloadIntroFonts
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
 
+    <style is:inline set:html={fontFaceCss}></style>
+
     {
       introFonts.map((href) => (
         <link
@@ -68,6 +87,14 @@ const introFonts = preloadIntroFonts
          GOOGLE TAG MANAGER
          ========================================= -->
 
+    <!--
+      O dataLayer e o gtm.start nascem no início
+      (o tempo da página continua correto), mas o
+      gtm.js — que puxa o Pixel do Facebook, ~250 KB
+      de JS — só é injetado depois do load, no
+      primeiro momento ocioso. Assim ele não disputa
+      o main thread com a entrada do Hero.
+    -->
     <script is:inline>
       (function(w,d,s,l,i){
         w[l]=w[l]||[];
@@ -77,16 +104,32 @@ const introFonts = preloadIntroFonts
           event: "gtm.js"
         });
 
-        var f=d.getElementsByTagName(s)[0],
-            j=d.createElement(s),
-            dl=l!="dataLayer" ? "&l="+l : "";
+        function inject(){
+          var f=d.getElementsByTagName(s)[0],
+              j=d.createElement(s),
+              dl=l!="dataLayer" ? "&l="+l : "";
 
-        j.async=true;
+          j.async=true;
 
-        j.src=
-          "https://www.googletagmanager.com/gtm.js?id="+i+dl;
+          j.src=
+            "https://www.googletagmanager.com/gtm.js?id="+i+dl;
 
-        f.parentNode.insertBefore(j,f);
+          f.parentNode.insertBefore(j,f);
+        }
+
+        function schedule(){
+          if ("requestIdleCallback" in w) {
+            w.requestIdleCallback(inject, { timeout: 2000 });
+          } else {
+            w.setTimeout(inject, 0);
+          }
+        }
+
+        if (d.readyState === "complete") {
+          schedule();
+        } else {
+          w.addEventListener("load", schedule, { once: true });
+        }
 
       })(window,document,"script","dataLayer","GTM-PLDHFWZ2");
     </script>
