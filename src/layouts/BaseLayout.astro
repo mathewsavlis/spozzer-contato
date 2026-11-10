@@ -39,6 +39,13 @@ interface Props {
   title?: string;
   description?: string;
   preloadIntroFonts?: boolean;
+  /*
+   * false = injeta o GTM imediatamente. A /obrigado
+   * precisa disso: é lá que o GTM dispara o Lead do
+   * Pixel, e a página redireciona para o WhatsApp
+   * em 1,2s — adiar o GTM perderia a conversão.
+   */
+  deferTags?: boolean;
 }
 
 const {
@@ -46,6 +53,7 @@ const {
   description =
     "Fotografia autoral, editorial e experiências visuais construídas com intenção.",
   preloadIntroFonts = false,
+  deferTags = true,
 } = Astro.props;
 
 /*
@@ -94,8 +102,10 @@ const introFonts = preloadIntroFonts
       de JS — só é injetado depois do load, no
       primeiro momento ocioso. Assim ele não disputa
       o main thread com a entrada do Hero.
+
+      Exceção: deferTags=false (página /obrigado).
     -->
-    <script is:inline>
+    <script is:inline define:vars={{ deferTags }}>
       (function(w,d,s,l,i){
         w[l]=w[l]||[];
 
@@ -125,7 +135,9 @@ const introFonts = preloadIntroFonts
           }
         }
 
-        if (d.readyState === "complete") {
+        if (!deferTags) {
+          inject();
+        } else if (d.readyState === "complete") {
           schedule();
         } else {
           w.addEventListener("load", schedule, { once: true });
@@ -167,6 +179,20 @@ const introFonts = preloadIntroFonts
               root.classList.add(
                 "js-fallback"
               );
+
+              /*
+               * O bundle não rodou: carrega as imagens
+               * adiadas (lib/deferredImages.js) direto.
+               */
+              document
+                .querySelectorAll("img[data-src]")
+                .forEach((image) => {
+                  if (image.dataset.srcset) {
+                    image.srcset = image.dataset.srcset;
+                  }
+
+                  image.src = image.dataset.src;
+                });
             },
             3500
           );

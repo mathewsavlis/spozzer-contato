@@ -10,7 +10,7 @@
  *   npm run images
  *
  * Rodar novamente sempre que uma imagem em
- * public/assets/imgs/{portfolio,testimonials,about}
+ * public/assets/imgs/{portfolio,about}
  * for adicionada ou substituída.
  */
 
@@ -24,7 +24,6 @@ const MANIFEST = path.join(ROOT, "src", "data", "imageVariants.json");
 
 const FOLDERS = [
   "assets/imgs/portfolio",
-  "assets/imgs/testimonials",
   "assets/imgs/about",
 ];
 

@@ -1,5 +1,9 @@
 import { initIntroExperience } from "./introExperience.js";
 import { initSessionTracking } from "../lib/analytics/session.js";
+import {
+  loadDeferredImages,
+  loadDeferredImagesNear,
+} from "../lib/deferredImages.js";
 
 const CLEANUP_KEY = "__byspozzerPageAnimationsCleanup";
 
@@ -39,7 +43,7 @@ export function initPageAnimations() {
   let secondaryTaskId = null;
   let secondaryTaskType = null;
 
-  let markWhatsappClick = () => {};
+  let markFormSubmitted = () => {};
 
   /*
    * =========================================
@@ -72,6 +76,28 @@ export function initPageAnimations() {
 
   /*
    * =========================================
+   * IMAGENS ADIADAS
+   * =========================================
+   *
+   * Portfolio: logo após a Intro existir — o JS
+   * e as fontes do Hero já chegaram, e o grid só
+   * aparece depois de ~1 tela de scroll.
+   *
+   * Sobre: só perto da viewport (é a última seção).
+   */
+
+  loadDeferredImages(
+    document.querySelector("[data-portfolio-grid]")
+  );
+
+  cleanups.push(
+    loadDeferredImagesNear(
+      document.querySelector("[data-about-stage]")
+    )
+  );
+
+  /*
+   * =========================================
    * VISITOR ANALYTICS
    * =========================================
    *
@@ -85,8 +111,8 @@ export function initPageAnimations() {
     const tracking =
       initSessionTracking();
 
-    markWhatsappClick =
-      tracking.markWhatsappClick;
+    markFormSubmitted =
+      tracking.markFormSubmitted;
   } catch (error) {
     console.error(
       "Falha ao iniciar analytics de sessão:",
@@ -110,11 +136,9 @@ export function initPageAnimations() {
 
       try {
         const [
-          testimonialsModule,
           contactModule,
           aboutModule,
         ] = await Promise.all([
-          import("./testimonials.js"),
           import("./contactExperience.js"),
           import("./aboutExperience.js"),
         ]);
@@ -122,12 +146,10 @@ export function initPageAnimations() {
         if (destroyed) return;
 
         cleanups.push(
-          testimonialsModule
-            .initTestimonials(),
           contactModule
             .initContactExperience({
-              onWhatsappClick:
-                markWhatsappClick,
+              onFormSubmitted:
+                markFormSubmitted,
             }),
           aboutModule
             .initAboutExperience()

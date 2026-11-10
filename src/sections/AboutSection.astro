@@ -21,32 +21,49 @@ const imageSizes = "(min-width: 48rem) 48vh, 26vh";
   <div class="about-container">
     <figure class="about-media" data-about-image>
       <div class="about-media__inner">
+        <!--
+          data-src: carregadas por pageAnimations.js quando o
+          Sobre se aproxima (ver lib/deferredImages.js). O
+          <noscript> cobre quem navega sem JS.
+        -->
         <img
           class="about-image about-image--primary"
-          src={assetPath(primaryImage.src)}
-          srcset={assetSrcset(primaryImage.src)}
+          data-src={assetPath(primaryImage.src)}
+          data-srcset={assetSrcset(primaryImage.src)}
           sizes={imageSizes}
           alt={primaryImage.alt}
           width="800"
           height="1000"
-          loading="lazy"
           decoding="async"
           data-about-photo="primary"
         />
 
         <img
           class="about-image about-image--secondary"
-          src={assetPath(secondaryImage.src)}
-          srcset={assetSrcset(secondaryImage.src)}
+          data-src={assetPath(secondaryImage.src)}
+          data-srcset={assetSrcset(secondaryImage.src)}
           sizes={imageSizes}
           alt=""
           width="800"
           height="1000"
-          loading="lazy"
           decoding="async"
           aria-hidden="true"
           data-about-photo="secondary"
         />
+
+        <noscript>
+          <img
+            class="about-image about-image--primary"
+            src={assetPath(primaryImage.src)}
+            srcset={assetSrcset(primaryImage.src)}
+            sizes={imageSizes}
+            alt={primaryImage.alt}
+            width="800"
+            height="1000"
+            loading="lazy"
+            decoding="async"
+          />
+        </noscript>
       </div>
     </figure>
 

@@ -31,13 +31,15 @@ export function assetSrcset(path = "") {
 }
 
 /*
- * Proporção largura/altura da original.
- * Usada para calcular `sizes` quando a
- * imagem é recortada com object-fit: cover.
+ * Dimensões reais da original, para os
+ * atributos width/height do <img> (reservam
+ * a proporção certa antes do download).
  */
-export function assetAspectRatio(path = "") {
+export function assetSize(path = "") {
   const key = `/${String(path).replace(/^\/+/, "")}`;
   const entry = imageVariants[key];
 
-  return entry ? entry.width / entry.height : undefined;
+  return entry
+    ? { width: entry.width, height: entry.height }
+    : { width: undefined, height: undefined };
 }

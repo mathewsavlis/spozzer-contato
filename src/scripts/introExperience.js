@@ -381,6 +381,12 @@ function initStableIntroViewport(
  * =========================================
  */
 
+const NOOP_PLAYBACK = {
+  cleanup() {},
+  setCovered() {},
+};
+
+
 function initHeroVideoPlayback(
   video
 ) {
@@ -390,7 +396,7 @@ function initHeroVideoPlayback(
       HTMLVideoElement
     )
   ) {
-    return () => { };
+    return NOOP_PLAYBACK;
   }
 
 
@@ -405,6 +411,17 @@ function initHeroVideoPlayback(
    */
   let isInView =
     true;
+
+
+  /*
+   * Desktop: enquanto a camada desfocada
+   * (createVideoBlurLayer) está totalmente
+   * opaca, ninguém vê o vídeo — decodificar
+   * VP9 em 1080p ali era o maior custo da
+   * rolagem no trace. Ver setCovered().
+   */
+  let isCovered =
+    false;
 
 
   /*
@@ -464,7 +481,7 @@ function initHeroVideoPlayback(
     video.dataset.playback =
       "missing-source";
 
-    return () => { };
+    return NOOP_PLAYBACK;
   }
 
 
@@ -573,7 +590,8 @@ function initHeroVideoPlayback(
         destroyed ||
         !started ||
         document.hidden ||
-        !isInView
+        !isInView ||
+        isCovered
       ) {
         return false;
       }
@@ -754,7 +772,7 @@ function initHeroVideoPlayback(
    * =========================================
    */
 
-  return () => {
+  const cleanup = () => {
     if (
       destroyed
     ) {
@@ -818,14 +836,139 @@ function initHeroVideoPlayback(
 
     delete video.dataset.playback;
   };
+
+
+  return {
+    cleanup,
+
+    setCovered(covered) {
+      if (isCovered === covered) return;
+
+      isCovered = covered;
+
+      if (covered) {
+        if (!video.paused) video.pause();
+        return;
+      }
+
+      attemptPlay();
+    },
+  };
 }
 
 
 /*
  * =========================================
- * ELEMENTS
+ * HERO VIDEO BLUR (DESKTOP)
  * =========================================
+ *
+ * Canvas por cima do vídeo com o quadro atual
+ * já desfocado. Desenhado em 1/8 da resolução:
+ * além de barato, a ampliação pelo CSS já
+ * suaviza — o filtro do canvas completa o
+ * desfoque equivalente ao antigo blur(7px).
+ *
+ * paint() roda no onStart do tween, ou seja,
+ * toda vez que o scroll entra na fase de
+ * desfoque vindo de cima — o quadro capturado
+ * é sempre o do momento da transição.
  */
+
+const BLUR_DOWNSCALE = 8;
+
+function createVideoBlurLayer(video) {
+  const canvas =
+    document.createElement("canvas");
+
+  canvas.setAttribute(
+    "aria-hidden",
+    "true"
+  );
+
+  canvas.style.cssText =
+    "position:absolute;inset:0;z-index:1;width:100%;height:100%;opacity:0;visibility:hidden;pointer-events:none;";
+
+  video.after(canvas);
+
+  const poster =
+    video.parentElement?.querySelector(
+      ".hero-poster"
+    );
+
+  const context =
+    canvas.getContext("2d");
+
+  const paint = () => {
+    if (!context) return;
+
+    const box =
+      canvas.getBoundingClientRect();
+
+    const width = Math.max(
+      1,
+      Math.round(box.width / BLUR_DOWNSCALE)
+    );
+
+    const height = Math.max(
+      1,
+      Math.round(box.height / BLUR_DOWNSCALE)
+    );
+
+    canvas.width = width;
+    canvas.height = height;
+
+    const hasFrame =
+      video.readyState >= 2 &&
+      video.videoWidth > 0;
+
+    const source = hasFrame
+      ? video
+      : poster;
+
+    const sourceWidth = hasFrame
+      ? video.videoWidth
+      : poster?.naturalWidth;
+
+    const sourceHeight = hasFrame
+      ? video.videoHeight
+      : poster?.naturalHeight;
+
+    if (!source || !sourceWidth || !sourceHeight) {
+      return;
+    }
+
+    /* Mesmo recorte do object-fit: cover. */
+    const scale = Math.max(
+      width / sourceWidth,
+      height / sourceHeight
+    );
+
+    const drawWidth = sourceWidth * scale;
+    const drawHeight = sourceHeight * scale;
+
+    context.filter = "blur(1px)";
+
+    try {
+      context.drawImage(
+        source,
+        (width - drawWidth) / 2,
+        (height - drawHeight) / 2,
+        drawWidth,
+        drawHeight
+      );
+    } catch {
+      // Quadro indisponível — mantém o canvas anterior.
+    }
+  };
+
+  return {
+    element: canvas,
+    paint,
+    remove() {
+      canvas.remove();
+    },
+  };
+}
 
 
 /*
@@ -1014,7 +1157,7 @@ export function initIntroExperience() {
       portfolioStage,
     });
 
-  const cleanupHeroVideo =
+  const heroPlayback =
     initHeroVideoPlayback(heroVideo);
 
   const getPortfolioDistance = () => {
@@ -1064,6 +1207,10 @@ export function initIntroExperience() {
   const isMobile = window.matchMedia(
     MOBILE_QUERY
   ).matches;
+
+  const videoBlur = isMobile
+    ? null
+    : createVideoBlurLayer(heroVideo);
 
   const context = gsap.context(
     () => {
@@ -1187,23 +1334,39 @@ export function initIntroExperience() {
         "heroExit"
       );
 
-      /* 02 — Profundidade visual do Hero permanece igual. */
-      timeline.to(
-        heroVideo,
-        isMobile
-          ? {
-              scale: 1.012,
-              duration: 1,
-              ease: "power2.inOut",
-            }
-          : {
-              filter: "blur(7px)",
-              scale: 1.025,
-              duration: 1,
-              ease: "power2.inOut",
+      /*
+       * 02 — Profundidade visual do Hero (desktop).
+       *
+       * Antes: filter: blur() + scale animados no
+       * próprio <video>. Medido em laboratório, era
+       * o maior custo da rolagem — o desfoque de um
+       * vídeo em tela cheia é recalculado a cada
+       * quadro. Agora o quadro atual é desfocado UMA
+       * vez num canvas (ver createVideoBlurLayer) e só
+       * opacity/scale animam, o que roda na GPU.
+       *
+       * No mobile o antigo scale(1.012) foi removido:
+       * imperceptível, mas forçava o vídeo a ser
+       * reescalado a cada quadro do scroll.
+       */
+      if (!isMobile) {
+        timeline.to(
+          videoBlur.element,
+          {
+            autoAlpha: 1,
+            scale: 1.025,
+            duration: 1,
+            ease: "power2.inOut",
+            onStart: videoBlur.paint,
+            onUpdate() {
+              heroPlayback.setCovered(
+                this.progress() > 0.999
+              );
             },
-        "portfolioReveal"
-      );
+          },
+          "portfolioReveal"
+        );
+      }
 
       timeline.to(
         overlay,
@@ -1345,8 +1508,9 @@ export function initIntroExperience() {
       refresh
     );
 
-    cleanupHeroVideo();
+    heroPlayback.cleanup();
     context.revert();
+    videoBlur?.remove();
     stableViewport.cleanup();
     disableEnhancedMode();
   };

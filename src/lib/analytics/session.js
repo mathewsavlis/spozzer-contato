@@ -101,20 +101,15 @@ function getSessionId() {
  * Inicia o rastreamento de tempo por camada e
  * tempo total nesta página (só faz sentido em
  * index.astro, onde as seções existem), e
- * devolve `markWhatsappClick()` — contactExperience.js
- * chama isso dentro do clique no botão do
- * WhatsApp, ANTES do link abrir.
+ * devolve `markFormSubmitted()` — contactExperience.js
+ * chama isso ANTES de navegar para /obrigado, para
+ * que o beacon disparado pelo pagehide da navegação
+ * já saia com formSubmitted: true.
  *
- * Os dados saem no MESMO formato do site com
- * formulário, para o CRM não precisar distinguir:
- *
- * - a sessão da página sai com formSubmitted: true
- *   (o clique é o que gera o lead aqui, como o
- *   envio do formulário gerava lá);
- * - o clique no WhatsApp vira uma linha própria
- *   (sendWhatsappClickEvent), como o beacon de
- *   /obrigado fazia — e por ser imediato, não se
- *   perde se o beacon da sessão já tiver saído.
+ * O clique no WhatsApp acontece numa página
+ * diferente (obrigado.astro, ver
+ * sendWhatsappClickEvent abaixo) — é um beacon
+ * separado, não algo que este objeto controla.
  *
  * Silenciosamente vira um no-op se
  * PUBLIC_EVENTS_API_URL não estiver
@@ -125,7 +120,7 @@ function getSessionId() {
 export function initSessionTracking() {
   if (!EVENTS_API_URL) {
     return {
-      markWhatsappClick: () => {},
+      markFormSubmitted: () => {},
     };
   }
 
@@ -292,8 +287,9 @@ export function initSessionTracking() {
 
       formSubmitted,
 
-      // O clique tem linha própria
-      // (sendWhatsappClickEvent).
+      // Nunca acontece nesta página — o clique no
+      // WhatsApp só existe em /obrigado, num beacon
+      // próprio (ver sendWhatsappClickEvent).
       whatsappClickAt: null,
 
       startedAt:
@@ -348,29 +344,32 @@ export function initSessionTracking() {
 
 
   return {
-    markWhatsappClick() {
+    markFormSubmitted() {
       formSubmitted = true;
-
-      sendWhatsappClickEvent();
     },
   };
 }
 
 
 /*
- * Linha própria para o clique no WhatsApp —
- * mesmo payload do beacon de /obrigado no
- * site com formulário. Reaproveita o sessionId
- * da página para o CRM ligar o clique à sessão
- * de navegação que o originou.
+ * Beacon independente disparado em /obrigado.astro,
+ * cobrindo os dois caminhos reais que levam ao
+ * WhatsApp (redirecionamento automático por timeout
+ * E o clique manual no link — ambos compartilham a
+ * mesma URL e o mesmo elemento no script inline da
+ * página, então uma única chamada guardada cobre
+ * os dois).
+ *
+ * Reaproveita o mesmo sessionId de index.astro (via
+ * sessionStorage, que sobrevive à navegação dentro
+ * da mesma aba) para que o CRM consiga, na análise,
+ * ligar esse clique à sessão de navegação que o
+ * originou — mesmo sendo uma linha própria no D1,
+ * já que esta é uma página/carregamento diferente.
  */
 
-let whatsappClickSent = false;
-
-function sendWhatsappClickEvent() {
-  // Um registro por página, mesmo com cliques repetidos.
-  if (whatsappClickSent) return;
-  whatsappClickSent = true;
+export function sendWhatsappClickEvent() {
+  if (!EVENTS_API_URL) return;
 
   const now =
     new Date().toISOString();
@@ -388,6 +387,8 @@ function sendWhatsappClickEvent() {
     totalDurationMs: 0,
     sectionDurations: {},
 
+    // Só se chega em /obrigado depois de um envio
+    // de formulário bem-sucedido (ver obrigado.astro).
     formSubmitted: true,
 
     whatsappClickAt: now,

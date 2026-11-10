@@ -173,3 +173,12 @@ select {
     scroll-behavior: auto !important;
   }
 }
+
+/*
+ * Imagens adiadas (lib/deferredImages.js) não têm src
+ * até o JS agir. Sem JS, quem aparece é a cópia do
+ * <noscript> ao lado — a versão vazia some.
+ */
+html:not(.js) img[data-src] {
+  display: none;
+}

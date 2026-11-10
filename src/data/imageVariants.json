@@ -1,241 +1,141 @@
 {
-  "/assets/imgs/portfolio/amanda.webp": {
-    "width": 1600,
-    "height": 2400,
-    "variants": [
-      {
-        "width": 480,
-        "src": "/assets/imgs/portfolio/amanda-480w.webp"
-      },
-      {
-        "width": 800,
-        "src": "/assets/imgs/portfolio/amanda-800w.webp"
-      },
-      {
-        "width": 1200,
-        "src": "/assets/imgs/portfolio/amanda-1200w.webp"
-      }
-    ]
-  },
-  "/assets/imgs/portfolio/anne.webp": {
-    "width": 1600,
-    "height": 2400,
-    "variants": [
-      {
-        "width": 480,
-        "src": "/assets/imgs/portfolio/anne-480w.webp"
-      },
-      {
-        "width": 800,
-        "src": "/assets/imgs/portfolio/anne-800w.webp"
-      },
-      {
-        "width": 1200,
-        "src": "/assets/imgs/portfolio/anne-1200w.webp"
-      }
-    ]
-  },
-  "/assets/imgs/portfolio/cecilia.webp": {
-    "width": 1600,
-    "height": 2400,
-    "variants": [
-      {
-        "width": 480,
-        "src": "/assets/imgs/portfolio/cecilia-480w.webp"
-      },
-      {
-        "width": 800,
-        "src": "/assets/imgs/portfolio/cecilia-800w.webp"
-      },
-      {
-        "width": 1200,
-        "src": "/assets/imgs/portfolio/cecilia-1200w.webp"
-      }
-    ]
-  },
-  "/assets/imgs/portfolio/izandra.webp": {
-    "width": 1170,
-    "height": 2080,
-    "variants": [
-      {
-        "width": 480,
-        "src": "/assets/imgs/portfolio/izandra-480w.webp"
-      },
-      {
-        "width": 800,
-        "src": "/assets/imgs/portfolio/izandra-800w.webp"
-      }
-    ]
-  },
-  "/assets/imgs/portfolio/kellen.webp": {
-    "width": 1600,
-    "height": 2400,
-    "variants": [
-      {
-        "width": 480,
-        "src": "/assets/imgs/portfolio/kellen-480w.webp"
-      },
-      {
-        "width": 800,
-        "src": "/assets/imgs/portfolio/kellen-800w.webp"
-      },
-      {
-        "width": 1200,
-        "src": "/assets/imgs/portfolio/kellen-1200w.webp"
-      }
-    ]
-  },
-  "/assets/imgs/portfolio/mari.webp": {
-    "width": 1600,
-    "height": 2400,
-    "variants": [
-      {
-        "width": 480,
-        "src": "/assets/imgs/portfolio/mari-480w.webp"
-      },
-      {
-        "width": 800,
-        "src": "/assets/imgs/portfolio/mari-800w.webp"
-      },
-      {
-        "width": 1200,
-        "src": "/assets/imgs/portfolio/mari-1200w.webp"
-      }
-    ]
-  },
-  "/assets/imgs/portfolio/paula.webp": {
+  "/assets/imgs/portfolio/andressa.webp": {
     "width": 1200,
     "height": 1800,
     "variants": [
       {
         "width": 480,
-        "src": "/assets/imgs/portfolio/paula-480w.webp"
+        "src": "/assets/imgs/portfolio/andressa-480w.webp"
       },
       {
         "width": 800,
-        "src": "/assets/imgs/portfolio/paula-800w.webp"
+        "src": "/assets/imgs/portfolio/andressa-800w.webp"
       }
     ]
   },
-  "/assets/imgs/portfolio/tati.webp": {
-    "width": 1600,
-    "height": 2400,
+  "/assets/imgs/portfolio/cliente-areia.webp": {
+    "width": 1200,
+    "height": 1800,
     "variants": [
       {
         "width": 480,
-        "src": "/assets/imgs/portfolio/tati-480w.webp"
+        "src": "/assets/imgs/portfolio/cliente-areia-480w.webp"
       },
       {
         "width": 800,
-        "src": "/assets/imgs/portfolio/tati-800w.webp"
+        "src": "/assets/imgs/portfolio/cliente-areia-800w.webp"
+      }
+    ]
+  },
+  "/assets/imgs/portfolio/cliente-banho.webp": {
+    "width": 1200,
+    "height": 1800,
+    "variants": [
+      {
+        "width": 480,
+        "src": "/assets/imgs/portfolio/cliente-banho-480w.webp"
+      },
+      {
+        "width": 800,
+        "src": "/assets/imgs/portfolio/cliente-banho-800w.webp"
+      }
+    ]
+  },
+  "/assets/imgs/portfolio/cliente-lago.webp": {
+    "width": 1200,
+    "height": 1800,
+    "variants": [
+      {
+        "width": 480,
+        "src": "/assets/imgs/portfolio/cliente-lago-480w.webp"
+      },
+      {
+        "width": 800,
+        "src": "/assets/imgs/portfolio/cliente-lago-800w.webp"
+      }
+    ]
+  },
+  "/assets/imgs/portfolio/cliente-mar.webp": {
+    "width": 1200,
+    "height": 1800,
+    "variants": [
+      {
+        "width": 480,
+        "src": "/assets/imgs/portfolio/cliente-mar-480w.webp"
+      },
+      {
+        "width": 800,
+        "src": "/assets/imgs/portfolio/cliente-mar-800w.webp"
+      }
+    ]
+  },
+  "/assets/imgs/portfolio/cliente-por-do-sol.webp": {
+    "width": 1800,
+    "height": 1200,
+    "variants": [
+      {
+        "width": 480,
+        "src": "/assets/imgs/portfolio/cliente-por-do-sol-480w.webp"
+      },
+      {
+        "width": 800,
+        "src": "/assets/imgs/portfolio/cliente-por-do-sol-800w.webp"
       },
       {
         "width": 1200,
-        "src": "/assets/imgs/portfolio/tati-1200w.webp"
+        "src": "/assets/imgs/portfolio/cliente-por-do-sol-1200w.webp"
       }
     ]
   },
-  "/assets/imgs/testimonials/amanda.webp": {
-    "width": 1600,
-    "height": 2400,
+  "/assets/imgs/portfolio/cliente-praia.webp": {
+    "width": 1166,
+    "height": 1800,
     "variants": [
       {
         "width": 480,
-        "src": "/assets/imgs/testimonials/amanda-480w.webp"
+        "src": "/assets/imgs/portfolio/cliente-praia-480w.webp"
       },
       {
         "width": 800,
-        "src": "/assets/imgs/testimonials/amanda-800w.webp"
-      },
-      {
-        "width": 1200,
-        "src": "/assets/imgs/testimonials/amanda-1200w.webp"
+        "src": "/assets/imgs/portfolio/cliente-praia-800w.webp"
       }
     ]
   },
-  "/assets/imgs/testimonials/bruna.webp": {
-    "width": 1249,
-    "height": 2011,
+  "/assets/imgs/portfolio/cliente-quarto.webp": {
+    "width": 1200,
+    "height": 1800,
     "variants": [
       {
         "width": 480,
-        "src": "/assets/imgs/testimonials/bruna-480w.webp"
+        "src": "/assets/imgs/portfolio/cliente-quarto-480w.webp"
       },
       {
         "width": 800,
-        "src": "/assets/imgs/testimonials/bruna-800w.webp"
+        "src": "/assets/imgs/portfolio/cliente-quarto-800w.webp"
       }
     ]
   },
-  "/assets/imgs/testimonials/cecilia.webp": {
-    "width": 2400,
-    "height": 1600,
+  "/assets/imgs/portfolio/cliente-retrato.webp": {
+    "width": 750,
+    "height": 1334,
     "variants": [
       {
         "width": 480,
-        "src": "/assets/imgs/testimonials/cecilia-480w.webp"
-      },
-      {
-        "width": 800,
-        "src": "/assets/imgs/testimonials/cecilia-800w.webp"
-      },
-      {
-        "width": 1200,
-        "src": "/assets/imgs/testimonials/cecilia-1200w.webp"
+        "src": "/assets/imgs/portfolio/cliente-retrato-480w.webp"
       }
     ]
   },
-  "/assets/imgs/testimonials/gabriela.webp": {
-    "width": 1591,
-    "height": 2400,
+  "/assets/imgs/portfolio/yze.webp": {
+    "width": 1200,
+    "height": 1800,
     "variants": [
       {
         "width": 480,
-        "src": "/assets/imgs/testimonials/gabriela-480w.webp"
+        "src": "/assets/imgs/portfolio/yze-480w.webp"
       },
       {
         "width": 800,
-        "src": "/assets/imgs/testimonials/gabriela-800w.webp"
-      },
-      {
-        "width": 1200,
-        "src": "/assets/imgs/testimonials/gabriela-1200w.webp"
-      }
-    ]
-  },
-  "/assets/imgs/testimonials/iasmin.webp": {
-    "width": 1603,
-    "height": 2400,
-    "variants": [
-      {
-        "width": 480,
-        "src": "/assets/imgs/testimonials/iasmin-480w.webp"
-      },
-      {
-        "width": 800,
-        "src": "/assets/imgs/testimonials/iasmin-800w.webp"
-      },
-      {
-        "width": 1200,
-        "src": "/assets/imgs/testimonials/iasmin-1200w.webp"
-      }
-    ]
-  },
-  "/assets/imgs/testimonials/kellen.webp": {
-    "width": 2400,
-    "height": 1600,
-    "variants": [
-      {
-        "width": 480,
-        "src": "/assets/imgs/testimonials/kellen-480w.webp"
-      },
-      {
-        "width": 800,
-        "src": "/assets/imgs/testimonials/kellen-800w.webp"
-      },
-      {
-        "width": 1200,
-        "src": "/assets/imgs/testimonials/kellen-1200w.webp"
+        "src": "/assets/imgs/portfolio/yze-800w.webp"
       }
     ]
   },
